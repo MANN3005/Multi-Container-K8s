@@ -1,0 +1,26 @@
+steps:
+- name: gcr.io/cloud-builders/docker
+  args: ['build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/kubernetes-assignment/container1:latest', '.']
+  id: 'building-image-container1'
+  waitFor: ['-']
+- name: gcr.io/cloud-builders/docker
+  args: ['push', 'us-docker.pkg.dev/$PROJECT_ID/kubernetes-assignment/container1:latest']
+  id: 'pushing-image-container1'
+  waitFor: ['building-image-container1']
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', 'my-pvc.yaml']
+  id: 'applying-pvc'
+  waitFor: ['pushing-image-container1']
+- name: gcr.io/cloud-builders/gke-deploy
+  args:
+    - 'run'
+    - '--filename=deployment.yaml'
+    - '--image=us-docker.pkg.dev/csci5409-b00951709/kubernetes-assignment/container1:latest'
+    - '--location=us-central1-c'
+    - '--cluster=mann-cluster'
+  id: 'Deploying to GKE'
+  waitFor: ['applying-pvc']
+options:
+  env:
+    - 'CLOUDSDK_COMPUTE_REGION=us-central1-c'
+    - 'CLOUDSDK_CONTAINER_CLUSTER=mann-cluster'

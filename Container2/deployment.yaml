@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: k8s-deployment-c2
+  labels:
+    cont: cont2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cont: cont2
+  template:
+    metadata:
+      labels:
+        cont: cont2
+    spec:
+      containers:
+        - name: container2
+          image: us-docker.pkg.dev/csci5409-b00951709/kubernetes-assignment/container2:latest
+          ports:
+            - containerPort: 8000
+          volumeMounts:
+            - name: pv-storage
+              mountPath: /Mann_PV_dir
+      volumes:
+        - name: pv-storage
+          persistentVolumeClaim:
+            claimName: my-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: k8s-service-c2
+spec:
+  type: ClusterIP
+  selector:
+    cont: cont2
+  ports:  
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      name: container2-port

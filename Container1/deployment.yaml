@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: k8s-deployment-c1
+  labels:
+    cont: cont1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      cont: cont1
+  template:
+    metadata:
+      labels:
+        cont: cont1
+    spec:
+      containers:
+        - name: container1
+          image: us-docker.pkg.dev/csci5409-b00951709/kubernetes-assignment/container1:latest
+          ports: 
+            - containerPort: 6000
+          volumeMounts:
+            - name: pv-storage
+              mountPath: /Mann_PV_dir
+      volumes:
+        - name: pv-storage
+          persistentVolumeClaim:
+            claimName: my-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: k8s-service-c1
+spec:
+  type: LoadBalancer
+  selector:
+    cont: cont1
+  ports:  
+    - protocol: TCP
+      port: 6000
+      targetPort: 6000
+      name: container1-port
